@@ -8,6 +8,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
 import android.util.AttributeSet
+import android.view.MotionEvent
 import android.view.View
 
 class downloadView:View {
@@ -70,10 +71,14 @@ class downloadView:View {
 
     //视图
     override fun onDraw(canvas: Canvas?) {
+        //创建底层方块，用于后期绘制圆形
         canvas?.drawRoundRect(0f+moveX,0f,rectX-moveX,rectY,changeAlpha,changeAlpha,mPaint1)
+        //画勾勾
         canvas?.drawLine(cx-rectY/4f,cy,cx,cy+rectY/4f,mPaint3)
         canvas?.drawLine(cx,cy+rectY/4f,cx+rectY/4f,cy-rectY/4f,mPaint3)
+        //创建同色遮挡方块挡住勾勾
         canvas?.drawRect(cx-rectY/4f+distance,cy-rectY/4f,cx+rectY/4f,cy+rectY/4f,mPaint1)
+        //创建加载方块
         canvas?.drawRoundRect(0f+translateX,0f,rectX,rectY,changeAlpha,changeAlpha,mPaint)
     }
     //创建平移动画
@@ -85,6 +90,7 @@ class downloadView:View {
     //创建动画集
     private val animator = AnimatorSet()
     fun creation(){
+        //矩形加载动画
         if(rectAnim == null){
             rectAnim = ValueAnimator.ofFloat(0f,rectX).apply {
                 duration = 1000
@@ -95,8 +101,9 @@ class downloadView:View {
                 }
             }
         }
+        //圆角动画
         if(alphaAnim == null){
-            alphaAnim = ValueAnimator.ofFloat(0f,180f).apply {
+            alphaAnim = ValueAnimator.ofFloat(0f,rectY/2f).apply {
                 duration = 1000
                 repeatCount = 0
                 addUpdateListener {
@@ -105,6 +112,7 @@ class downloadView:View {
                 }
             }
         }
+        //移至圆心动画
         if(translateAnim == null){
             translateAnim = ValueAnimator.ofFloat(0f,(rectX-rectY)/2f).apply {
                 duration = 1000
@@ -115,6 +123,7 @@ class downloadView:View {
                 }
             }
         }
+        //勾勾显示动画
         if(ggShow == null){
             ggShow = ValueAnimator.ofFloat(0f,rectY/2f).apply {
                 duration = 1000
@@ -125,13 +134,21 @@ class downloadView:View {
                 }
             }
         }
+        //动画集合进行播放
         animator.apply {
             playSequentially(rectAnim,alphaAnim,translateAnim,ggShow)
             start()
         }
     }
-
+    //启动动画
     fun startAnim(){
         creation()
+    }
+    //判断是否下载，如果下载就启动动画
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        if(event?.action == MotionEvent.ACTION_DOWN){
+            startAnim()
+        }
+        return true
     }
 }
